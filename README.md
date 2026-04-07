@@ -2,7 +2,7 @@
 
 A minimal, modern, interactive terminal-style personal website. Built with vanilla HTML, CSS, and JavaScript.
 
-![Terminal Preview](https://user-images.githubusercontent.com/placeholder/terminal-preview.png)
+![Terminal Preview](./assets/preview.png)
 
 ## ✨ Features
 
