@@ -137,7 +137,7 @@ MIT License — do whatever you want. Attribution appreciated but not required.
 
 ## 🙏 Credits
 
-- Built by [Dan](https://dazr.co)
+- Built with AI. Prompted and curated by [Dan](https://dazr.co)
 - Inspired by macOS Terminal
 - Colors from [Nord Theme](https://www.nordtheme.com/)
 - Font: JetBrains Mono
