@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.cache/
+
+# Local dev server files (if using any)
+.node_modules/
+dist/
+build/
