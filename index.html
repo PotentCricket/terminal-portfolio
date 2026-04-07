@@ -234,17 +234,35 @@
         }
 
         @media (max-width: 600px) {
+            body {
+                padding: 8px;
+            }
+            
             .terminal {
-                border-radius: 8px;
-                height: 420px;
+                width: 100%;
+                max-width: none;
+                height: calc(100vh - 100px);
+                min-height: auto;
+                border-radius: 12px;
             }
             
             .terminal-body {
-                padding: 16px;
+                padding: 12px;
+                font-size: 14px;
             }
             
             .output, .terminal-input {
-                font-size: 13px;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            .terminal-header {
+                padding: 10px 12px;
+            }
+            
+            .help-note {
+                font-size: 11px;
+                margin-top: 8px;
             }
         }
     </style>
@@ -324,9 +342,9 @@ This is my little corner of the internet. Thanks for stopping by.`,
             ],
             
             projects: [
-                { name: 'dazr.co', desc: 'This terminal website — my personal web space', tech: 'HTML, CSS, JavaScript' },
-                { name: 'dazr-cli', desc: 'Command-line toolkit for common workflows', tech: 'Go, Rust' },
-                { name: 'dotfiles', desc: 'Carefully curated development environment configs', tech: 'Shell, Lua, TOML' }
+                { name: 'dazr.co', desc: 'This terminal website — my personal web space', tech: 'AI-curated HTML/CSS (via Cascade AI)' },
+                { name: 'dazr-cli', desc: 'Command-line toolkit for common workflows', tech: 'AI-assisted Go/Rust prompts' },
+                { name: 'dotfiles', desc: 'Carefully curated development environment configs', tech: 'Shell + AI orchestration' }
             ],
             
             // ─── Options ───
