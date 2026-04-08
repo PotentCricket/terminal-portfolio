@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terminal Portfolio</title>
+    <meta name="description" content="Dan's personal terminal portfolio - a tech enthusiast working with systems, containers, and security.">
+    <meta property="og:title" content="Terminal Portfolio - dazr.co">
+    <meta property="og:description" content="Dan's personal terminal portfolio - systems, containers, and security.">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://dazr.co/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -265,6 +270,63 @@
                 display: none;
             }
         }
+
+        .terminal.minimized {
+            transform: scale(0) translateY(500px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .desktop-icon {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .desktop-icon.visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .desktop-icon:hover .icon-terminal {
+            background: #3a3a3a;
+            transform: scale(1.05);
+        }
+
+        .icon-terminal {
+            width: 64px;
+            height: 64px;
+            background: #2a2a2a;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #a3be8c;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .icon-label {
+            color: #d8dee9;
+            font-size: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -284,9 +346,9 @@
     <div class="terminal">
         <div class="terminal-header">
             <div class="window-controls">
-                <div class="control close"></div>
-                <div class="control minimize"></div>
-                <div class="control maximize"></div>
+                <div class="control close" id="btn-close" title="Close"></div>
+                <div class="control minimize" id="btn-minimize" title="Minimize"></div>
+                <div class="control maximize" id="btn-maximize" title="Maximize"></div>
             </div>
             <div class="terminal-title" id="terminal-title">visitor@example.com — ~</div>
         </div>
@@ -304,6 +366,11 @@
 
     <div class="help-note">
         Type <span>help</span> to see all available commands • <kbd>Tab</kbd> to autocomplete • <kbd>↑</kbd><kbd>↓</kbd> for history
+    </div>
+
+    <div class="desktop-icon" id="desktop-icon" title="Terminal">
+        <div class="icon-terminal">⌘</div>
+        <div class="icon-label">Terminal</div>
     </div>
 
     <script>
@@ -419,11 +486,17 @@ This is my little corner of the internet. Thanks for stopping by.`,
                 description: 'Current date and time',
                 execute: () => {
                     const now = new Date();
+                    const timeInZone = now.toLocaleTimeString('en-US', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit',
+                        timeZone: CONFIG.timezone 
+                    });
                     return `
 <span class="info">Current Time</span>
 
 ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+${timeInZone} (${CONFIG.timezone})
 
 <span class="muted">Unix timestamp: ${Math.floor(now.getTime() / 1000)}</span>`;
                 }
@@ -435,12 +508,13 @@ ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: 
                     contactState.step = 'email';
                     contactState.email = '';
                     contactState.message = '';
+                    startContactTimeout();
                     return `
 <span class="info">Contact Form</span>
 
 Enter your email address:
 
-<span class="muted">Tip: Press Ctrl+C to cancel</span>`;
+<span class="countdown-tip"><span class="muted">Tip: Press Ctrl+C to cancel • Timeout: 60s</span></span>`;
                 }
             },
 
@@ -534,7 +608,12 @@ ${mins}m ${secs}s
             },
         };
 
+        const VALID_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         let contactState = { step: null, email: '', message: '' };
+        let contactTimeoutId = null;
+        let contactCountdownId = null;
+        let countdownTipEl = null;
+        const CONTACT_TIMEOUT_MS = 60000;
         let commandHistory = [];
         let historyIndex = -1;
         let pageLoadTime = Date.now();
@@ -587,10 +666,52 @@ ${mins}m ${secs}s
             return 'Desktop';
         }
 
+        function startContactTimeout() {
+            clearTimeout(contactTimeoutId);
+            clearInterval(contactCountdownId);
+            
+            let remainingSeconds = CONTACT_TIMEOUT_MS / 1000;
+            
+            const updateCountdown = () => {
+                // Find the countdown tip element if not already stored
+                if (!countdownTipEl) {
+                    countdownTipEl = output.querySelector('.countdown-tip');
+                }
+                if (countdownTipEl) {
+                    if (remainingSeconds > 0) {
+                        countdownTipEl.innerHTML = `<span class="muted">Tip: Press Ctrl+C to cancel • Timeout: ${remainingSeconds}s</span>`;
+                        remainingSeconds--;
+                    } else {
+                        countdownTipEl.innerHTML = `<span class="error">Timeout!</span>`;
+                        clearInterval(contactCountdownId);
+                    }
+                }
+            };
+            
+            updateCountdown();
+            contactCountdownId = setInterval(updateCountdown, 1000);
+            
+            contactTimeoutId = setTimeout(() => {
+                if (contactState.step) {
+                    cancelContactForm();
+                    print('<span class="error">Contact form timed out due to inactivity (60s).</span>');
+                }
+            }, CONTACT_TIMEOUT_MS);
+        }
+
+        function clearContactTimeout() {
+            clearTimeout(contactTimeoutId);
+            clearInterval(contactCountdownId);
+            contactTimeoutId = null;
+            contactCountdownId = null;
+            countdownTipEl = null;
+        }
+
         function cancelContactForm() {
             contactState.step = null;
             contactState.email = '';
             contactState.message = '';
+            clearContactTimeout();
             print('<span class="warning">Contact form cancelled.</span>');
         }
 
@@ -613,19 +734,27 @@ ${mins}m ${secs}s
         }
 
         function executeCommand(cmdLine) {
-            if (contactState.step) {
-                handleContactFlow(input.value);
-                input.value = '';
-                updateCursorPosition();
-                return;
-            }
-
             const args = cmdLine.trim().split(/\s+/);
             const cmd = args.shift().toLowerCase();
 
             if (!cmd) return;
 
-            commandHistory.push(cmdLine);
+            // During contact flow, route input to handleContactFlow (except for Ctrl+C handled in keydown)
+            if (contactState.step) {
+                handleContactFlow(cmdLine);
+                input.value = '';
+                updateCursorPosition();
+                return;
+            }
+
+            // Deduplicate consecutive commands
+            if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== cmdLine) {
+                commandHistory.push(cmdLine);
+                // Limit history to 100 entries
+                if (commandHistory.length > 100) {
+                    commandHistory.shift();
+                }
+            }
             historyIndex = commandHistory.length;
 
             const entry = document.createElement('div');
@@ -641,12 +770,21 @@ ${mins}m ${secs}s
                     resultDiv.innerHTML = result;
                     output.appendChild(resultDiv);
                 }
+                input.value = '';
+                updateCursorPosition();
+                scrollToBottom();
             } else if (cmd === 'exit') {
                 print('<span class="warning">Nice try! But there is no exit from the internet. 😄</span>');
+                input.value = '';
+                updateCursorPosition();
             } else if (cmd === 'sudo') {
                 print('<span class="error">Permission denied: visitor lacks sudo privileges</span>');
+                input.value = '';
+                updateCursorPosition();
             } else {
                 print(`<span class="error">Command not found: ${escapeHtml(cmd)}</span> <span class="muted">Type 'help' for available commands.</span>`);
+                input.value = '';
+                updateCursorPosition();
             }
 
             scrollToBottom();
@@ -654,9 +792,10 @@ ${mins}m ${secs}s
 
         function handleContactFlow(value) {
             const trimmed = value.trim();
+            startContactTimeout();
             
             if (contactState.step === 'email') {
-                if (!trimmed || !trimmed.includes('@')) {
+                if (!trimmed || !VALID_EMAIL_REGEX.test(trimmed)) {
                     print('<span class="error">Please enter a valid email address.</span>');
                     return;
                 }
@@ -679,6 +818,9 @@ ${mins}m ${secs}s
                 if (lower === 'y' || lower === 'yes') {
                     print('<span class="info">Sending message...</span>');
                     
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    
                     fetch('https://api.web3forms.com/submit', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -687,15 +829,22 @@ ${mins}m ${secs}s
                             email: contactState.email,
                             message: contactState.message,
                             subject: CONFIG.emailSubject
-                        })
+                        }),
+                        signal: controller.signal
                     }).then(response => {
+                        clearTimeout(timeoutId);
                         if (response.ok) {
                             print('<span class="success">Message sent! I\'ll get back to you soon.</span>');
                         } else {
                             print('<span class="error">Failed to send. Please try again later.</span>');
                         }
-                    }).catch(() => {
-                        print('<span class="error">Failed to send. Please try again later.</span>');
+                    }).catch(err => {
+                        clearTimeout(timeoutId);
+                        if (err.name === 'AbortError') {
+                            print('<span class="error">Request timed out. Please try again later.</span>');
+                        } else {
+                            print('<span class="error">Failed to send. Please try again later.</span>');
+                        }
                     });
                 } else if (lower === 'n' || lower === 'no') {
                     print('<span class="warning">Message cancelled.</span>');
@@ -706,6 +855,7 @@ ${mins}m ${secs}s
                 contactState.step = null;
                 contactState.email = '';
                 contactState.message = '';
+                clearContactTimeout();
             }
         }
 
@@ -751,7 +901,9 @@ ${mins}m ${secs}s
                 updateCursorPosition();
             } else if (e.key === 'Tab') {
                 e.preventDefault();
-                autocomplete();
+                if (!contactState.step) {
+                    autocomplete();
+                }
             } else if (e.key === 'ArrowUp') {
                 e.preventDefault();
                 if (historyIndex > 0) {
@@ -778,6 +930,38 @@ ${mins}m ${secs}s
         document.addEventListener('click', (e) => {
             if (e.target.closest('.terminal')) {
                 input.focus();
+            }
+        });
+
+        // Window control handlers
+        document.getElementById('btn-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            print('<span class="warning">Nice try! But there is no exit from the internet. 😄</span>');
+        });
+
+        document.getElementById('btn-minimize').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const terminal = document.querySelector('.terminal');
+            const desktopIcon = document.getElementById('desktop-icon');
+            terminal.classList.add('minimized');
+            desktopIcon.classList.add('visible');
+        });
+
+        document.getElementById('desktop-icon').addEventListener('click', () => {
+            const terminal = document.querySelector('.terminal');
+            const desktopIcon = document.getElementById('desktop-icon');
+            terminal.classList.remove('minimized');
+            desktopIcon.classList.remove('visible');
+            input.focus();
+        });
+
+        document.getElementById('btn-maximize').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+            } else {
+                document.documentElement.requestFullscreen?.() || 
+                document.documentElement.webkitRequestFullscreen?.();
             }
         });
 
