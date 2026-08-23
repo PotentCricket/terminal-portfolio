@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>dazr.co — Desktop Preview</title>
+    <meta name="description" content="Liquid Glass desktop preview of Dan's terminal portfolio — dazr.co">
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="canonical" href="https://dazr.co/desktop.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* macOS Liquid Glass tokens */
+            --glass-fill: rgba(255, 255, 255, 0.10);
+            --glass-fill-strong: rgba(255, 255, 255, 0.18);
+            --glass-stroke: rgba(255, 255, 255, 0.52);
+            --glass-stroke-soft: rgba(255, 255, 255, 0.22);
+            --glass-shadow:
+                0 28px 80px rgba(4, 10, 24, 0.42),
+                0 8px 24px rgba(4, 10, 24, 0.22),
+                0 1px 0 rgba(255, 255, 255, 0.18);
+            --glass-blur: blur(42px) saturate(210%);
+            --text: rgba(255, 255, 255, 0.96);
+            --text-muted: rgba(255, 255, 255, 0.64);
+            --text-faint: rgba(255, 255, 255, 0.40);
+            --accent: #64d2ff;
+            --accent-soft: rgba(100, 210, 255, 0.28);
+            --success: #7dcea0;
+            --error: #ff6b7a;
+            --warning: #f0c674;
+            --info: #8ecae6;
+            --term-bg: rgba(12, 16, 26, 0.42);
+            --term-text: #eef3fa;
+            --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+            --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+            --menubar-h: 38px;
+            --dock-h: 82px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --spec-x: 50%;
+            --spec-y: 20%;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                "Helvetica Neue", system-ui, sans-serif;
+            color: var(--text);
+            background: #0b1220;
+            -webkit-font-smoothing: antialiased;
+            user-select: none;
+        }
+
+        button {
+            font: inherit;
+            color: inherit;
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* ── Atmosphere / wallpaper ── */
+        .desktop {
+            position: fixed;
+            inset: 0;
+            isolation: isolate;
+        }
+
+        .wallpaper {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            background:
+                radial-gradient(110% 80% at 18% 12%, rgba(140, 210, 255, 0.62), transparent 50%),
+                radial-gradient(95% 75% at 86% 16%, rgba(255, 170, 140, 0.48), transparent 46%),
+                radial-gradient(80% 70% at 62% 88%, rgba(100, 230, 200, 0.40), transparent 52%),
+                radial-gradient(55% 45% at 42% 48%, rgba(255, 255, 255, 0.16), transparent 58%),
+                linear-gradient(158deg, #16304f 0%, #1f3a55 26%, #185060 55%, #243848 100%);
+        }
+
+        .wallpaper::before,
+        .wallpaper::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(72px);
+            opacity: 0.78;
+            animation: drift 20s var(--ease) infinite alternate;
+            will-change: transform;
+        }
+
+        .wallpaper::before {
+            width: 52vmax;
+            height: 52vmax;
+            left: -12%;
+            top: 6%;
+            background: radial-gradient(circle, rgba(130, 210, 255, 0.62), transparent 68%);
+        }
+
+        .wallpaper::after {
+            width: 46vmax;
+            height: 46vmax;
+            right: -10%;
+            bottom: 0%;
+            background: radial-gradient(circle, rgba(255, 168, 120, 0.50), transparent 68%);
+            animation-delay: -7s;
+            animation-duration: 24s;
+        }
+
+        .wallpaper-caustic {
+            position: absolute;
+            inset: -10%;
+            pointer-events: none;
+            opacity: 0.35;
+            background:
+                radial-gradient(ellipse 40% 28% at 30% 40%, rgba(255,255,255,0.22), transparent 70%),
+                radial-gradient(ellipse 35% 25% at 70% 55%, rgba(160, 230, 255, 0.18), transparent 70%),
+                radial-gradient(ellipse 30% 20% at 55% 25%, rgba(255, 210, 180, 0.14), transparent 70%);
+            mix-blend-mode: soft-light;
+            animation: caustic 16s ease-in-out infinite alternate;
+        }
+
+        .wallpaper-noise {
+            position: absolute;
+            inset: 0;
+            opacity: 0.07;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes drift {
+            from { transform: translate3d(0, 0, 0) scale(1); }
+            to { transform: translate3d(5%, -4%, 0) scale(1.1); }
+        }
+
+        @keyframes caustic {
+            from { transform: translate3d(-1%, 1%, 0) scale(1); }
+            to { transform: translate3d(2%, -2%, 0) scale(1.06); }
+        }
+
+        /* ── Liquid glass material (macOS 26/27) ── */
+        .glass {
+            background:
+                radial-gradient(
+                    120% 90% at var(--spec-x) var(--spec-y),
+                    rgba(255, 255, 255, 0.34) 0%,
+                    rgba(255, 255, 255, 0.08) 32%,
+                    transparent 58%
+                ),
+                linear-gradient(
+                    155deg,
+                    rgba(255, 255, 255, 0.28) 0%,
+                    rgba(255, 255, 255, 0.08) 36%,
+                    rgba(255, 255, 255, 0.03) 100%
+                ),
+                var(--glass-fill);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            box-shadow:
+                var(--glass-shadow),
+                inset 0 1px 0 rgba(255, 255, 255, 0.55),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+                inset 1px 0 0 rgba(255, 255, 255, 0.12),
+                inset -1px 0 0 rgba(255, 255, 255, 0.06);
+            position: relative;
+        }
+
+        .glass::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 4;
+            padding: 1px;
+            background: linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.72) 0%,
+                rgba(255, 255, 255, 0.22) 28%,
+                rgba(255, 255, 255, 0.06) 52%,
+                rgba(180, 220, 255, 0.28) 100%
+            );
+            -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            opacity: 0.9;
+        }
+
+        .glass-spec {
+            overflow: hidden;
+        }
+
+        .glass-spec::before {
+            content: "";
+            position: absolute;
+            inset: -20%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(
+                circle 42% at var(--spec-x) var(--spec-y),
+                rgba(255, 255, 255, 0.38),
+                transparent 62%
+            );
+            opacity: 0.55;
+            mix-blend-mode: soft-light;
+            transition: opacity 0.35s ease;
+        }
+
+        /* ── Menubar ── */
+        .menubar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--menubar-h);
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            font-size: 13px;
+            letter-spacing: -0.015em;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.06)),
+                rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(48px) saturate(220%);
+            -webkit-backdrop-filter: blur(48px) saturate(220%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.42),
+                0 8px 28px rgba(4, 10, 24, 0.12);
+        }
+
+        .mb-left,
+        .mb-right {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .mb-brand {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-weight: 650;
+            padding: 3px 9px;
+            border-radius: 8px;
+            margin-right: 4px;
+        }
+
+        .mb-brand:hover { background: rgba(255,255,255,0.12); }
+
+        .mb-mark {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,255,255,0.55)),
+                linear-gradient(160deg, #7ec8ff, #5aa8e8);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .mb-item {
+            padding: 3px 9px;
+            border-radius: 7px;
+            color: var(--text);
+            opacity: 0.92;
+        }
+
+        .mb-item:hover { background: rgba(255,255,255,0.14); }
+
+        .mb-item.is-muted { color: var(--text-muted); }
+
+        .mb-clock {
+            font-variant-numeric: tabular-nums;
+            padding: 3px 8px;
+            border-radius: 7px;
+        }
+
+        .preview-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+            padding: 2px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: rgba(20, 36, 48, 0.9);
+            background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.55));
+            box-shadow: 0 1px 4px rgba(0,0,0,0.18), inset 0 1px 0 #fff;
+            white-space: nowrap;
+        }
+
+        .preview-pill i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #34c759;
+            box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.25);
+        }
+
+        /* ── Desktop icons ── */
+        .desk-icons {
+            position: absolute;
+            top: calc(var(--menubar-h) + 28px);
+            right: 28px;
+            z-index: 20;
+            display: grid;
+            gap: 18px;
+            justify-items: center;
+        }
+
+        .desk-icon {
+            width: 86px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 4px;
+            border-radius: 16px;
+            transition: transform 0.25s var(--ease-spring), background 0.2s ease;
+        }
+
+        .desk-icon:hover { background: rgba(255,255,255,0.1); }
+        .desk-icon:active { transform: scale(0.96); }
+        .desk-icon.is-selected {
+            background: rgba(90, 200, 250, 0.18);
+            outline: 1px solid rgba(90, 200, 250, 0.35);
+        }
+
+        .di-tile {
+            width: 58px;
+            height: 58px;
+            border-radius: 15px;
+            display: grid;
+            place-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 10px 24px rgba(10, 18, 32, 0.35),
+                inset 0 1px 0 rgba(255,255,255,0.55),
+                inset 0 -1px 0 rgba(0,0,0,0.15);
+            transition: transform 0.25s var(--ease-spring);
+        }
+
+        .desk-icon:hover .di-tile { transform: translateY(-2px) scale(1.04); }
+
+        .di-tile::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(255,255,255,0.45) 0%, transparent 42%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .di-tile.term {
+            background:
+                linear-gradient(160deg, rgba(255,255,255,0.2), transparent 50%),
+                linear-gradient(180deg, #2c3340, #1a1f2a);
+            color: var(--success);
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .di-tile.about {
+            background: linear-gradient(160deg, #8ecae6, #457b9d);
+            color: #fff;
+        }
+
+        .di-tile.projects {
+            background: linear-gradient(160deg, #7dcea0, #2a9d8f);
+            color: #fff;
+        }
+
+        .di-tile.skills {
+            background: linear-gradient(160deg, #f0c674, #e09f3e);
+            color: #3a2a10;
+        }
+
+        .di-tile.contact {
+            background: linear-gradient(160deg, #ff9aa8, #e76f7f);
+            color: #fff;
+        }
+
+        .di-tile.classic {
+            background: linear-gradient(160deg, rgba(255,255,255,0.35), rgba(255,255,255,0.08));
+            border: 1px solid rgba(255,255,255,0.35);
+            color: var(--text);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .di-label {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+            padding: 2px 7px;
+            border-radius: 6px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .desk-icon.is-selected .di-label {
+            background: var(--accent-soft);
+        }
+
+        /* ── Stage / window ── */
+        .stage {
+            position: absolute;
+            inset: var(--menubar-h) 0 calc(var(--dock-h) + 18px + var(--safe-bottom));
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            pointer-events: none;
+        }
+
+        .terminal-window {
+            width: min(920px, 100%);
+            height: min(560px, 100%);
+            max-height: 100%;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            pointer-events: auto;
+            transform-origin: center bottom;
+            transition:
+                opacity 0.35s var(--ease),
+                transform 0.45s var(--ease-spring),
+                filter 0.35s ease;
+            animation: window-in 0.6s var(--ease-spring) both;
+        }
+
+        .terminal-window.minimized {
+            opacity: 0;
+            transform: translateY(42%) scale(0.52);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        @keyframes window-in {
+            from {
+                opacity: 0;
+                transform: translateY(22px) scale(0.94);
+                filter: blur(8px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+                filter: none;
+            }
+        }
+
+        .window-chrome {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 15px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            position: relative;
+            flex: none;
+            z-index: 3;
+        }
+
+        .window-chrome::after {
+            content: "";
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            top: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+            opacity: 0.8;
+        }
+
+        .traffic {
+            display: flex;
+            gap: 8px;
+            z-index: 5;
+            position: relative;
+        }
+
+        .traffic-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.45), 0 1px 2px rgba(0,0,0,0.2);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        /* Larger hit target for traffic lights */
+        .traffic-btn::before {
+            content: "";
+            position: absolute;
+            inset: -8px;
+        }
+
+        .traffic-btn:hover { transform: scale(1.08); filter: brightness(1.08); }
+
+        .traffic-btn.close { background: linear-gradient(180deg, #ff7b72, #ff453a); }
+        .traffic-btn.min { background: linear-gradient(180deg, #ffd60a, #ffb340); }
+        .traffic-btn.max { background: linear-gradient(180deg, #32d74b, #28c840); }
+
+        .window-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            font-weight: 550;
+            color: var(--text-muted);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .window-badge {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-faint);
+            letter-spacing: 0.02em;
+            z-index: 1;
+        }
+
+        .terminal-body {
+            flex: 1;
+            min-height: 0;
+            padding: 18px 20px;
+            overflow-y: auto;
+            font-family: "JetBrains Mono", ui-monospace, Menlo, Monaco, monospace;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--term-text);
+            background:
+                linear-gradient(180deg, rgba(8, 12, 20, 0.28), rgba(8, 12, 20, 0.48)),
+                var(--term-bg);
+            user-select: text;
+            cursor: text;
+            position: relative;
+            z-index: 1;
+        }
+
+        .terminal-body::-webkit-scrollbar { width: 9px; }
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.18);
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .output .welcome { color: var(--success); margin-bottom: 12px; display: block; }
+        .output .error { color: var(--error); }
+        .output .success { color: var(--success); }
+        .output .info { color: var(--info); }
+        .output .warning { color: var(--warning); }
+        .output .muted { color: rgba(180, 200, 220, 0.55); }
+
+        .line { margin-bottom: 4px; white-space: pre-wrap; word-wrap: break-word; }
+
+        .command-entry { margin-bottom: 10px; }
+        .command-text { color: var(--term-text); }
+
+        .list-item {
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .list-item::before {
+            content: "›";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+        }
+
+        .link {
+            color: var(--info);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .link:hover { opacity: 0.8; text-decoration: underline; }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            gap: 8px;
+        }
+
+        .prompt {
+            color: var(--success);
+            flex: none;
+            user-select: none;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            min-width: 0;
+        }
+
+        .terminal-input {
+            width: 100%;
+            background: transparent;
+            border: 0;
+            outline: none;
+            color: var(--term-text);
+            font-family: inherit;
+            font-size: inherit;
+            caret-color: transparent;
+        }
+
+        .cursor {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 17px;
+            background: var(--success);
+            border-radius: 1px;
+            animation: blink 1s step-end infinite;
+            pointer-events: none;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* ── Dock ── */
+        .dock-wrap {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: calc(14px + var(--safe-bottom));
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .dock {
+            pointer-events: auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            padding: 11px 16px 14px;
+            border-radius: 28px;
+            animation: dock-in 0.65s 0.12s var(--ease-spring) both;
+        }
+
+        @keyframes dock-in {
+            from { opacity: 0; transform: translateY(24px) scale(0.92); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .dock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            width: 54px;
+            transition: transform 0.25s var(--ease-spring);
+        }
+
+        .dock-item:hover { transform: translateY(-8px) scale(1.12); }
+
+        .dock-tile {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 8px 18px rgba(8, 14, 28, 0.35),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+
+        .dock-tile::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(255,255,255,0.42), transparent 45%);
+            pointer-events: none;
+        }
+
+        .dock-tile.term {
+            background: linear-gradient(180deg, #343b4a, #1c212c);
+            color: var(--success);
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .dock-tile.classic {
+            background: linear-gradient(160deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08));
+            border: 1px solid rgba(255,255,255,0.28);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .dock-tile.github {
+            background: linear-gradient(160deg, #3a3f4a, #1a1d24);
+            color: #fff;
+        }
+
+        .dock-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: transparent;
+            transition: background 0.2s ease;
+        }
+
+        .dock-item.is-open .dock-dot {
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 0 6px rgba(255,255,255,0.45);
+        }
+
+        .hint-bar {
+            position: absolute;
+            left: 50%;
+            bottom: calc(var(--dock-h) + 28px + var(--safe-bottom));
+            transform: translateX(-50%);
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            color: var(--text-muted);
+            pointer-events: none;
+            animation: hint-in 0.7s 0.4s var(--ease) both;
+            white-space: nowrap;
+            max-width: calc(100% - 32px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hint-bar kbd {
+            font-family: inherit;
+            font-size: 11px;
+            padding: 1px 6px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: var(--text);
+        }
+
+        .hint-bar strong {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        @keyframes hint-in {
+            from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+            to { opacity: 1; transform: translateX(-50%); }
+        }
+
+        .boot-veil {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #070b14;
+            display: grid;
+            place-items: center;
+            transition: opacity 0.55s var(--ease), visibility 0.55s;
+        }
+
+        .boot-veil.is-done {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .boot-mark {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.9), rgba(255,255,255,0.35)),
+                linear-gradient(160deg, #7ec8ff, #4a90c8);
+            box-shadow: 0 12px 40px rgba(90, 180, 255, 0.35), inset 0 1px 0 #fff;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.06); opacity: 1; }
+        }
+
+        @media (max-width: 720px) {
+            .desk-icons { display: none; }
+            .mb-item.hide-sm { display: none; }
+            .preview-pill { display: none; }
+            .window-badge { display: none; }
+            .hint-bar { display: none; }
+            .stage {
+                inset: var(--menubar-h) 0 calc(70px + var(--safe-bottom));
+                padding: 10px;
+            }
+            .terminal-window {
+                width: 100%;
+                height: 100%;
+                border-radius: 14px;
+            }
+            .dock {
+                padding: 8px 12px 10px;
+                border-radius: 20px;
+                gap: 6px;
+            }
+            .dock-item { width: 48px; }
+            .dock-tile { width: 42px; height: 42px; border-radius: 11px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-veil" id="boot-veil" aria-hidden="true">
+        <div class="boot-mark"></div>
+    </div>
+
+    <div class="desktop" id="desktop">
+        <div class="wallpaper" aria-hidden="true">
+            <div class="wallpaper-caustic"></div>
+            <div class="wallpaper-noise"></div>
+        </div>
+
+        <header class="menubar" role="banner">
+            <div class="mb-left">
+                <a class="mb-brand" href="https://dazr.co/" title="Classic site">
+                    <span class="mb-mark" aria-hidden="true"></span>
+                    <span>dazr.co</span>
+                </a>
+                <button type="button" class="mb-item hide-sm" data-run="about">About</button>
+                <button type="button" class="mb-item hide-sm" data-run="projects">Projects</button>
+                <button type="button" class="mb-item hide-sm" data-run="skills">Skills</button>
+                <button type="button" class="mb-item hide-sm" data-run="contact">Contact</button>
+                <span class="preview-pill" title="This is a preview — classic site unchanged">
+                    <i></i> Liquid Glass preview
+                </span>
+            </div>
+            <div class="mb-right">
+                <a class="mb-item is-muted hide-sm" href="index.html">Classic</a>
+                <a class="mb-item is-muted" href="https://github.com/PotentCricket" target="_blank" rel="noopener">GitHub</a>
+                <div class="mb-clock" id="mb-clock">—</div>
+            </div>
+        </header>
+
+        <section class="desk-icons" aria-label="Desktop">
+            <button type="button" class="desk-icon is-selected" data-action="focus-terminal" title="Terminal">
+                <span class="di-tile term">⌘</span>
+                <span class="di-label">Terminal</span>
+            </button>
+            <button type="button" class="desk-icon" data-run="about" title="about">
+                <span class="di-tile about">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M5.5 19c1.4-3.2 3.7-4.8 6.5-4.8S16.1 15.8 17.5 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <span class="di-label">About</span>
+            </button>
+            <button type="button" class="desk-icon" data-run="projects" title="projects">
+                <span class="di-tile projects">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="4" y="5" width="16" height="13" rx="2.2" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M4 9.5h16" stroke="currentColor" stroke-width="1.8"/>
+                    </svg>
+                </span>
+                <span class="di-label">Projects</span>
+            </button>
+            <button type="button" class="desk-icon" data-run="skills" title="skills">
+                <span class="di-tile skills">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M7 16.5 12 7l5 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 13.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </span>
+                <span class="di-label">Skills</span>
+            </button>
+            <button type="button" class="desk-icon" data-run="contact" title="contact">
+                <span class="di-tile contact">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <rect x="4" y="6" width="16" height="12" rx="2.2" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="m5.5 8.5 6.5 5 6.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <span class="di-label">Contact</span>
+            </button>
+            <a class="desk-icon" href="index.html" title="Open classic terminal site">
+                <span class="di-tile classic">CLASSIC</span>
+                <span class="di-label">Classic</span>
+            </a>
+        </section>
+
+        <div class="stage">
+            <div class="terminal-window glass glass-spec" id="terminal-window" role="dialog" aria-label="Terminal">
+                <div class="window-chrome">
+                    <div class="traffic">
+                        <button type="button" class="traffic-btn close" id="btn-close" title="Close" aria-label="Close"></button>
+                        <button type="button" class="traffic-btn min" id="btn-minimize" title="Minimize" aria-label="Minimize"></button>
+                        <button type="button" class="traffic-btn max" id="btn-maximize" title="Maximize" aria-label="Maximize"></button>
+                    </div>
+                    <div class="window-title" id="terminal-title">visitor@dazr.co — ~</div>
+                    <div class="window-badge">CLI</div>
+                </div>
+                <div class="terminal-body" id="terminal-body">
+                    <div class="output" id="output"></div>
+                    <div class="command-line">
+                        <span class="prompt">$</span>
+                        <div class="input-wrapper">
+                            <input type="text" class="terminal-input" id="input" autocomplete="off" spellcheck="false" aria-label="Terminal input">
+                            <span class="cursor" id="cursor"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hint-bar glass">
+            Type <strong>help</strong> · <kbd>Tab</kbd> autocomplete · icons run CLI commands
+        </div>
+
+        <div class="dock-wrap">
+            <nav class="dock glass glass-spec" aria-label="Dock">
+                <button type="button" class="dock-item is-open" id="dock-terminal" data-action="focus-terminal" title="Terminal">
+                    <span class="dock-tile term">⌘</span>
+                    <span class="dock-dot"></span>
+                </button>
+                <a class="dock-item" href="index.html" title="Classic look">
+                    <span class="dock-tile classic">⌂</span>
+                    <span class="dock-dot"></span>
+                </a>
+                <a class="dock-item" href="https://github.com/PotentCricket" target="_blank" rel="noopener" title="GitHub">
+                    <span class="dock-tile github">
+                        <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                    </span>
+                    <span class="dock-dot"></span>
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            name: 'Dan',
+            domain: 'dazr.co',
+            catCount: 6,
+            web3formsKey: 'bde381a0-6e29-4162-9c64-750e04c28567',
+            emailSubject: 'New message from dazr.co',
+            aboutText: `Hi, I'm Dan.
+
+I'm not a coder. I'm an enthusiast who learned by breaking things.
+
+Everything I know about Docker, containers, and OS hardening is self-taught through trial, error, and frantic Googling. Comfortable enough to be dangerous, still very much a hobbyist.
+
+Lately I'm leveraging AI to build beyond my skills: orchestrating agents, crafting prompts, and assembling working code from the chaos.
+
+Proud servant to six feline overlords who believe keyboards exist for their lounging pleasure.
+
+When I'm not tinkering with containers or AI, I'm usually gaming.
+
+Welcome to my little corner of the internet. Thanks for stopping by.`,
+            skills: [
+                { category: 'Containers & Orchestration', items: 'Docker, Docker Compose, container security basics' },
+                { category: 'System Hardening', items: 'Linux OS hardening, SSH security, firewall configs' },
+                { category: 'Security Mindset', items: 'Attack surface reduction, privilege management' }
+            ],
+            projects: [
+                { name: 'dazr.co', desc: 'This terminal website — my personal web space', tech: 'AI-curated HTML/CSS (via Cascade AI)' },
+                { name: 'cricket-cli', desc: 'Command-line toolkit for common workflows', tech: 'AI-assisted Go/Rust prompts' },
+                { name: 'dotfiles', desc: 'Carefully curated development environment configs', tech: 'Shell + AI orchestration' }
+            ],
+            showDisclaimer: true,
+            timezone: 'Australia/Perth'
+        };
+
+        document.title = `${CONFIG.domain} — Desktop Preview`;
+        document.getElementById('terminal-title').textContent = `visitor@${CONFIG.domain} — ~`;
+
+        const input = document.getElementById('input');
+        const output = document.getElementById('output');
+        const cursor = document.getElementById('cursor');
+        const terminalBody = document.getElementById('terminal-body');
+        const terminalWindow = document.getElementById('terminal-window');
+        const dockTerminal = document.getElementById('dock-terminal');
+        const bootVeil = document.getElementById('boot-veil');
+
+        const commands = {
+            help: {
+                description: 'List all available commands',
+                execute: () => `
+<span class="info">Available commands:</span>
+
+<span class="list-item"><span class="success">help</span>        Show this help message</span>
+<span class="list-item"><span class="success">about</span>       Learn about ${CONFIG.name}</span>
+<span class="list-item"><span class="success">whoami</span>      Display visitor information</span>
+<span class="list-item"><span class="success">date</span>        Show current date and time</span>
+<span class="list-item"><span class="success">contact</span>     Send a message to ${CONFIG.name}</span>
+<span class="list-item"><span class="success">projects</span>    List featured projects</span>
+<span class="list-item"><span class="success">skills</span>      View technical knowledge</span>
+<span class="list-item"><span class="success">clear</span>       Clear the terminal</span>
+<span class="list-item"><span class="success">domain</span>      Info about ${CONFIG.domain}</span>
+<span class="list-item"><span class="success">history</span>     Show command history</span>
+<span class="list-item"><span class="success">classic</span>     Open the classic site</span>
+
+<span class="muted">Tip: Use Tab for autocomplete, Up/Down for history · Desktop icons also run commands</span>`
+            },
+            about: {
+                description: `About ${CONFIG.name} & ${CONFIG.domain}`,
+                execute: () => `<span class="info">${escapeHtml(CONFIG.aboutText).replace(/\n/g, '<br>')}</span>
+
+<span class="muted">Liquid Glass desktop preview · CLI unchanged</span>`
+            },
+            whoami: {
+                description: 'Visitor information',
+                execute: () => {
+                    const ua = navigator.userAgent;
+                    const platform = navigator.platform;
+                    const language = navigator.language;
+                    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    return `
+<span class="info">Visitor Profile</span>
+
+<span class="list-item">Device:      ${getDeviceType()}</span>
+<span class="list-item">System:      ${getPlatformInfo(ua, platform)}</span>
+<span class="list-item">Browser:     ${getBrowserName(ua)}</span>
+<span class="list-item">Language:    ${language}</span>
+<span class="list-item">Timezone:    ${timezone}</span>
+<span class="list-item">Resolution:  ${getResolution()}</span>
+<span class="muted">Don't worry, this information stays on your device.</span>`;
+                }
+            },
+            date: {
+                description: 'Current date and time',
+                execute: () => {
+                    const now = new Date();
+                    const timeInZone = now.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        timeZone: CONFIG.timezone
+                    });
+                    return `
+<span class="info">Current Time</span>
+
+${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+${timeInZone} (${CONFIG.timezone})
+
+<span class="muted">Unix timestamp: ${Math.floor(now.getTime() / 1000)}</span>`;
+                }
+            },
+            contact: {
+                description: `Send a message to ${CONFIG.name}`,
+                execute: () => {
+                    contactState.step = 'email';
+                    contactState.email = '';
+                    contactState.message = '';
+                    startContactTimeout();
+                    return `
+<span class="info">Contact Form</span>
+
+Enter your email address:
+
+<span class="countdown-tip"><span class="muted">Tip: Press Ctrl+C to cancel • Timeout: 60s</span></span>`;
+                }
+            },
+            projects: {
+                description: 'Featured projects',
+                execute: () => {
+                    const projectsList = CONFIG.projects.map((p, i) => `
+<span class="success">${i + 1}. ${p.name}</span>
+   ${p.desc}
+   <span class="muted">Tech: ${p.tech}</span>`).join('\n');
+                    return `
+<span class="info">Projects @ ${CONFIG.domain}</span>
+${projectsList}
+
+<span class="muted">Type 'contact' to discuss collaboration opportunities</span>`;
+                }
+            },
+            skills: {
+                description: 'Technical knowledge',
+                execute: () => {
+                    const skillsList = CONFIG.skills.map(s => `
+<span class="success">${s.category}</span>
+<span class="list-item">${s.items}</span>`).join('\n');
+                    const disclaimer = CONFIG.showDisclaimer ? `
+<span class="warning">Disclaimer</span>
+<span class="list-item">100% self-taught • No certifications • Not a pro</span>
+<span class="list-item">Just a curious person learning by doing</span>` : '';
+                    return `
+<span class="info">Things I Know About</span>
+${skillsList}
+${disclaimer}
+<span class="muted">Learning in public at ${CONFIG.domain}</span>`;
+                }
+            },
+            clear: {
+                description: 'Clear terminal',
+                execute: () => {
+                    setTimeout(() => { output.innerHTML = ''; }, 0);
+                    return '';
+                }
+            },
+            history: {
+                description: 'Command history',
+                execute: () => {
+                    if (commandHistory.length === 0) {
+                        return '<span class="muted">No commands in history yet.</span>';
+                    }
+                    return `
+<span class="info">Command History</span>
+
+${commandHistory.map((cmd, i) => `<span class="muted">${String(i + 1).padStart(3, '0')}</span>  ${cmd}`).join('\n')}`;
+                }
+            },
+            echo: {
+                description: 'Echo a message',
+                execute: (args) => args.join(' ') || '<span class="muted">Usage: echo [message]</span>'
+            },
+            uptime: {
+                description: 'System uptime',
+                execute: () => {
+                    const uptime = Math.floor((Date.now() - pageLoadTime) / 1000);
+                    const mins = Math.floor(uptime / 60);
+                    const secs = uptime % 60;
+                    return `
+<span class="info">Session Uptime</span>
+
+${mins}m ${secs}s
+
+<span class="muted">Page loaded at: ${new Date(pageLoadTime).toLocaleTimeString()}</span>`;
+                }
+            },
+            domain: {
+                description: `About ${CONFIG.domain} domain`,
+                execute: () => `
+<span class="info">${CONFIG.domain} Domain Info</span>
+
+<span class="list-item">Domain:    ${CONFIG.domain}</span>
+<span class="list-item">TLD:       .co (Colombia/commercial)</span>
+<span class="list-item">Protocol:  HTTPS</span>
+<span class="list-item">Status:    <span class="success">Active</span></span>
+<span class="list-item">Preview:   <span class="success">Liquid Glass desktop</span></span>
+
+<span class="muted">Short domains are hard to come by. This one is mine.</span>`
+            },
+            classic: {
+                description: 'Open classic terminal site',
+                execute: () => {
+                    setTimeout(() => { window.location.href = 'index.html'; }, 400);
+                    return '<span class="info">Opening classic look…</span>';
+                }
+            }
+        };
+
+        const VALID_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        let contactState = { step: null, email: '', message: '' };
+        let contactTimeoutId = null;
+        let contactCountdownId = null;
+        let countdownTipEl = null;
+        const CONTACT_TIMEOUT_MS = 60000;
+        let commandHistory = [];
+        let historyIndex = -1;
+        const pageLoadTime = Date.now();
+
+        function getBrowserName(ua) {
+            if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome';
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari';
+            if (ua.includes('Edg')) return 'Edge';
+            return 'Unknown';
+        }
+
+        function getPlatformInfo(ua, platform) {
+            if (platform === 'MacIntel' || platform === 'Mac') return 'macOS';
+            if (platform.startsWith('Win')) return 'Windows';
+            if (platform.includes('Linux')) return 'Linux';
+            if (/iPhone|iPad|iPod/.test(ua)) return ua.includes('iPad') ? 'iPad' : 'iPhone';
+            if (/Android/.test(ua)) return 'Android';
+            return platform;
+        }
+
+        function getResolution() {
+            const dpr = window.devicePixelRatio || 1;
+            const logicalWidth = window.screen.width;
+            const logicalHeight = window.screen.height;
+            const physicalWidth = Math.round(logicalWidth * dpr);
+            const physicalHeight = Math.round(logicalHeight * dpr);
+            if (dpr > 1) {
+                return `${logicalWidth}x${logicalHeight} @ ${dpr}x (${physicalWidth}x${physicalHeight})`;
+            }
+            return `${logicalWidth}x${logicalHeight}`;
+        }
+
+        function getDeviceType() {
+            const ua = navigator.userAgent;
+            if (/Mobi|Android|iPhone|iPad|iPod/.test(ua)) {
+                if (/iPad|Android(?!.*Mobile)/.test(ua) || window.screen.width > 768) return 'Tablet';
+                return 'Mobile';
+            }
+            return 'Desktop';
+        }
+
+        function startContactTimeout() {
+            clearTimeout(contactTimeoutId);
+            clearInterval(contactCountdownId);
+            let remainingSeconds = CONTACT_TIMEOUT_MS / 1000;
+            const updateCountdown = () => {
+                if (!countdownTipEl) countdownTipEl = output.querySelector('.countdown-tip');
+                if (countdownTipEl) {
+                    if (remainingSeconds > 0) {
+                        countdownTipEl.innerHTML = `<span class="muted">Tip: Press Ctrl+C to cancel • Timeout: ${remainingSeconds}s</span>`;
+                        remainingSeconds--;
+                    } else {
+                        countdownTipEl.innerHTML = `<span class="error">Timeout!</span>`;
+                        clearInterval(contactCountdownId);
+                    }
+                }
+            };
+            updateCountdown();
+            contactCountdownId = setInterval(updateCountdown, 1000);
+            contactTimeoutId = setTimeout(() => {
+                if (contactState.step) {
+                    cancelContactForm();
+                    print('<span class="error">Contact form timed out due to inactivity (60s).</span>');
+                }
+            }, CONTACT_TIMEOUT_MS);
+        }
+
+        function clearContactTimeout() {
+            clearTimeout(contactTimeoutId);
+            clearInterval(contactCountdownId);
+            contactTimeoutId = null;
+            contactCountdownId = null;
+            countdownTipEl = null;
+        }
+
+        function cancelContactForm() {
+            contactState.step = null;
+            contactState.email = '';
+            contactState.message = '';
+            clearContactTimeout();
+            print('<span class="warning">Contact form cancelled.</span>');
+        }
+
+        function updateCursorPosition() {
+            const charWidth = 8.1;
+            cursor.style.left = `${input.value.length * charWidth}px`;
+        }
+
+        function scrollToBottom() {
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        function print(text) {
+            const div = document.createElement('div');
+            div.className = 'line';
+            div.innerHTML = text;
+            output.appendChild(div);
+            scrollToBottom();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function executeCommand(cmdLine) {
+            const args = cmdLine.trim().split(/\s+/);
+            const cmd = args.shift().toLowerCase();
+            if (!cmd) return;
+
+            if (contactState.step) {
+                handleContactFlow(cmdLine);
+                input.value = '';
+                updateCursorPosition();
+                return;
+            }
+
+            if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== cmdLine) {
+                commandHistory.push(cmdLine);
+                if (commandHistory.length > 100) commandHistory.shift();
+            }
+            historyIndex = commandHistory.length;
+
+            const entry = document.createElement('div');
+            entry.className = 'command-entry';
+            entry.innerHTML = `<span class="prompt">$</span> <span class="command-text">${escapeHtml(cmdLine)}</span>`;
+            output.appendChild(entry);
+
+            if (commands[cmd]) {
+                const result = commands[cmd].execute(args);
+                if (result) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'line';
+                    resultDiv.innerHTML = result;
+                    output.appendChild(resultDiv);
+                }
+            } else if (cmd === 'exit') {
+                print('<span class="warning">Nice try! But there is no exit from the internet.</span>');
+            } else if (cmd === 'sudo') {
+                print('<span class="error">Permission denied: visitor lacks sudo privileges</span>');
+            } else {
+                print(`<span class="error">Command not found: ${escapeHtml(cmd)}</span> <span class="muted">Type 'help' for available commands.</span>`);
+            }
+
+            input.value = '';
+            updateCursorPosition();
+            scrollToBottom();
+        }
+
+        function handleContactFlow(value) {
+            const trimmed = value.trim();
+            startContactTimeout();
+
+            if (contactState.step === 'email') {
+                if (!trimmed || !VALID_EMAIL_REGEX.test(trimmed)) {
+                    print('<span class="error">Please enter a valid email address.</span>');
+                    return;
+                }
+                contactState.email = trimmed;
+                contactState.step = 'message';
+                print('<span class="success">Email: ' + escapeHtml(trimmed) + '</span>');
+                print('Enter your message:');
+            } else if (contactState.step === 'message') {
+                if (!trimmed) {
+                    print('<span class="error">Message cannot be empty.</span>');
+                    return;
+                }
+                contactState.message = trimmed;
+                contactState.step = 'confirm';
+                print('<span class="success">Message: ' + escapeHtml(trimmed.substring(0, 50)) + (trimmed.length > 50 ? '...' : '') + '</span>');
+                print('');
+                print('<span class="info">Confirm send?</span> <span class="warning">(y/n)</span>');
+            } else if (contactState.step === 'confirm') {
+                const lower = trimmed.toLowerCase();
+                if (lower === 'y' || lower === 'yes') {
+                    print('<span class="info">Sending message...</span>');
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            access_key: CONFIG.web3formsKey,
+                            email: contactState.email,
+                            message: contactState.message,
+                            subject: CONFIG.emailSubject
+                        }),
+                        signal: controller.signal
+                    }).then(response => {
+                        clearTimeout(timeoutId);
+                        if (response.ok) {
+                            print('<span class="success">Message sent! I\'ll get back to you soon.</span>');
+                        } else {
+                            print('<span class="error">Failed to send. Please try again later.</span>');
+                        }
+                    }).catch(err => {
+                        clearTimeout(timeoutId);
+                        if (err.name === 'AbortError') {
+                            print('<span class="error">Request timed out. Please try again later.</span>');
+                        } else {
+                            print('<span class="error">Failed to send. Please try again later.</span>');
+                        }
+                    });
+                } else if (lower === 'n' || lower === 'no') {
+                    print('<span class="warning">Message cancelled.</span>');
+                } else {
+                    print('<span class="error">Please enter y or n.</span>');
+                    return;
+                }
+                contactState.step = null;
+                contactState.email = '';
+                contactState.message = '';
+                clearContactTimeout();
+            }
+        }
+
+        function autocomplete() {
+            const partial = input.value.toLowerCase();
+            if (!partial) return;
+            const matches = Object.keys(commands).filter(cmd => cmd.startsWith(partial));
+            if (matches.length === 1) {
+                input.value = matches[0];
+                updateCursorPosition();
+            } else if (matches.length > 1) {
+                const entry = document.createElement('div');
+                entry.className = 'command-entry';
+                entry.innerHTML = `<span class="prompt">$</span> <span class="command-text">${escapeHtml(partial)}</span>`;
+                output.appendChild(entry);
+                print(`<span class="info">Possible matches:</span> ${matches.join('  ')}`);
+                input.value = partial;
+                updateCursorPosition();
+            }
+        }
+
+        function restoreTerminal() {
+            terminalWindow.classList.remove('minimized');
+            dockTerminal.classList.add('is-open');
+            document.querySelectorAll('.desk-icon').forEach(el => {
+                el.classList.toggle('is-selected', el.dataset.action === 'focus-terminal');
+            });
+            input.focus();
+        }
+
+        function minimizeTerminal() {
+            terminalWindow.classList.add('minimized');
+            dockTerminal.classList.remove('is-open');
+            document.querySelectorAll('.desk-icon').forEach(el => el.classList.remove('is-selected'));
+        }
+
+        function runFromShortcut(cmd) {
+            restoreTerminal();
+            if (contactState.step) {
+                cancelContactForm();
+            }
+            executeCommand(cmd);
+            input.focus();
+        }
+
+        function updateClock() {
+            const el = document.getElementById('mb-clock');
+            const now = new Date();
+            el.textContent = now.toLocaleString('en-AU', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: CONFIG.timezone
+            });
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (contactState.step && e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                cancelContactForm();
+                input.value = '';
+                updateCursorPosition();
+                return;
+            }
+            if (e.key === 'Enter') {
+                executeCommand(input.value);
+                input.value = '';
+                updateCursorPosition();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                if (!contactState.step) autocomplete();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                    updateCursorPosition();
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                    updateCursorPosition();
+                } else {
+                    historyIndex = commandHistory.length;
+                    input.value = '';
+                    updateCursorPosition();
+                }
+            }
+        });
+
+        input.addEventListener('input', updateCursorPosition);
+
+        terminalBody.addEventListener('click', () => input.focus());
+
+        document.getElementById('btn-close').addEventListener('click', (e) => {
+            e.stopPropagation();
+            restoreTerminal();
+            print('<span class="warning">Nice try! But there is no exit from the internet.</span>');
+        });
+
+        document.getElementById('btn-minimize').addEventListener('click', (e) => {
+            e.stopPropagation();
+            minimizeTerminal();
+        });
+
+        document.getElementById('btn-maximize').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+            } else {
+                document.documentElement.requestFullscreen?.() ||
+                document.documentElement.webkitRequestFullscreen?.();
+            }
+        });
+
+        document.querySelectorAll('[data-action="focus-terminal"]').forEach(el => {
+            el.addEventListener('click', () => restoreTerminal());
+        });
+
+        document.querySelectorAll('[data-run]').forEach(el => {
+            el.addEventListener('click', () => {
+                const cmd = el.getAttribute('data-run');
+                if (cmd) runFromShortcut(cmd);
+            });
+        });
+
+        document.querySelectorAll('.desk-icon[data-run], .desk-icon[data-action]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.desk-icon').forEach(i => i.classList.remove('is-selected'));
+                el.classList.add('is-selected');
+            });
+        });
+
+        output.innerHTML = `
+<span class="welcome">Welcome to ${CONFIG.domain} — Liquid Glass desktop preview</span>
+
+Type <span class="success">about</span> to learn more, or <span class="success">help</span> for all commands.
+<span class="muted">Classic site is unchanged at <a class="link" href="index.html">index.html</a>.</span>
+`;
+
+        updateClock();
+        setInterval(updateClock, 15000);
+        updateCursorPosition();
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                bootVeil.classList.add('is-done');
+                input.focus();
+            }, 420);
+        });
+
+        /* Pointer-tracked liquid specular */
+        let specRaf = 0;
+        const root = document.documentElement;
+        document.addEventListener('pointermove', (e) => {
+            if (specRaf) return;
+            specRaf = requestAnimationFrame(() => {
+                specRaf = 0;
+                const x = (e.clientX / window.innerWidth) * 100;
+                const y = (e.clientY / window.innerHeight) * 100;
+                root.style.setProperty('--spec-x', `${x.toFixed(2)}%`);
+                root.style.setProperty('--spec-y', `${y.toFixed(2)}%`);
+            });
+        }, { passive: true });
+    </script>
+</body>
+</html>
